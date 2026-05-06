@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-app
+  labels:
+    app: ecommerce-app
+spec:
+  replicas: 2                    # Run 2 copies of your app
+  selector:
+    matchLabels:
+      app: ecommerce-app
+  template:
+    metadata:
+      labels:
+        app: ecommerce-app
+    spec:
+      containers:
+      - name: ecommerce-app
+        image: gcr.io/rising-reserve-495404-v9/ecommerce-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:          # K8s checks if app is ready
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:           # K8s restarts if app crashes
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20

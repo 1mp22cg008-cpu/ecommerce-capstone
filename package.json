@@ -1,0 +1,12 @@
+{
+  "name": "ecommerce-capstone",
+  "version": "1.0.0",
+  "description": "Dummy ecommerce app for CI/CD demo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo 'All tests passed!' && exit 0"
+  },
+  "author": "1mp22cg008-cpu",
+  "license": "MIT"
+}

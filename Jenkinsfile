@@ -5,7 +5,6 @@ pipeline {
         PROJECT_ID   = 'rising-reserve-495404-v9'
         REGION       = 'us-central1'
         SERVICE_NAME = 'ecommerce-app'
-        IMAGE_NAME   = "gcr.io/rising-reserve-495404-v9/ecommerce-app"
         IMAGE_TAG    = "gcr.io/rising-reserve-495404-v9/ecommerce-app:${BUILD_NUMBER}"
     }
 
@@ -14,8 +13,16 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'echo "Commit: ${GIT_COMMIT}"'
-                sh 'echo "Branch: ${GIT_BRANCH}"'
+                sh 'echo "✅ Code checked out"'
+                sh 'echo "Branch : ${GIT_BRANCH}"'
+                sh 'echo "Commit : ${GIT_COMMIT}"'
+                sh 'ls -la'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test'
             }
         }
 
@@ -24,7 +31,8 @@ pipeline {
                 sh '''
                     echo "=== Building Docker Image ==="
                     docker build -t ${IMAGE_TAG} .
-                    echo "✅ Built: ${IMAGE_TAG}"
+                    echo "✅ Image built: ${IMAGE_TAG}"
+                    docker images | grep ecommerce-app
                 '''
             }
         }
@@ -32,12 +40,12 @@ pipeline {
         stage('Push to GCR') {
             steps {
                 sh '''
-                    echo "=== Configuring Docker for GCR ==="
+                    echo "=== Authenticating Docker with GCR ==="
                     gcloud auth configure-docker gcr.io --quiet
 
-                    echo "=== Pushing to GCR ==="
+                    echo "=== Pushing image to GCR ==="
                     docker push ${IMAGE_TAG}
-                    echo "✅ Pushed: ${IMAGE_TAG}"
+                    echo "✅ Image pushed successfully!"
                 '''
             }
         }
@@ -46,6 +54,8 @@ pipeline {
             steps {
                 sh '''
                     echo "=== Deploying to Cloud Run ==="
+                    gcloud config set project ${PROJECT_ID}
+
                     gcloud run deploy ${SERVICE_NAME} \
                         --image ${IMAGE_TAG} \
                         --platform managed \
@@ -55,8 +65,9 @@ pipeline {
                         --memory 512Mi \
                         --quiet
 
+                    echo ""
                     echo "=== ✅ Deployment Complete! ==="
-                    echo "Live URL:"
+                    echo "🌐 Live URL:"
                     gcloud run services describe ${SERVICE_NAME} \
                         --platform managed \
                         --region ${REGION} \
@@ -69,10 +80,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Successfully deployed to Cloud Run!'
+            echo '🎉 Pipeline complete — app is live on Cloud Run!'
         }
         failure {
-            echo '❌ Pipeline failed — check red stage above'
+            echo '❌ Pipeline failed — check the red stage above'
         }
         always {
             sh 'docker rmi ${IMAGE_TAG} || true'

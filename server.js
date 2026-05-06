@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 8080;
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
-        message: 'Hello from Ecommerce App!',
+        message: 'Hello from Ecommerce App v2!'',
         version: '1.0.0',
         build: process.env.BUILD_NUMBER || 'local',
         timestamp: new Date().toISOString()

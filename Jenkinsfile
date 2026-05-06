@@ -50,6 +50,29 @@ pipeline {
             }
         }
 
+        stage('Deploy to GKE') {
+    when { branch 'main' }
+    steps {
+        sh '''
+            echo "=== Connecting to GKE ==="
+            gcloud container clusters get-credentials ecommerce-cluster \
+                --zone us-central1-a \
+                --project rising-reserve-495404-v9
+
+            echo "=== Rolling update on GKE ==="
+            kubectl set image deployment/ecommerce-app \
+                ecommerce-app=${IMAGE_TAG}
+
+            kubectl rollout status deployment/ecommerce-app \
+                --timeout=120s
+
+            echo "✅ GKE deployment complete!"
+            kubectl get pods
+            kubectl get service ecommerce-service
+        '''
+    }
+}
+        
         stage('Deploy to Cloud Run') {
             steps {
                 sh '''

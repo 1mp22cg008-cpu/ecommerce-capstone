@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-service
+spec:
+  type: LoadBalancer             # Creates external IP for traffic
+  selector:
+    app: ecommerce-app           # Routes to pods with this label
+  ports:
+  - protocol: TCP
+    port: 80                     # External port (users hit port 80)
+    targetPort: 8080             # Internal container port
